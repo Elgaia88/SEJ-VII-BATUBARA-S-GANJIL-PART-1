@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Sejarah Indonesia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom Smooth Transitions */
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Jawaban Benar: Latar Hijau Kontras Jelas */
+        .btn-correct {
+            background-color: #15803d !important;
+            border-color: #166534 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px 0 rgba(22, 101, 52, 0.39);
+        }
+        /* Jawaban Salah: Latar Merah Kontras Jelas */
+        .btn-wrong {
+            background-color: #b91c1c !important;
+            border-color: #991b1b !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px 0 rgba(185, 28, 28, 0.39);
+        }
+        /* Tombol Terkunci saat Feedback Aktif */
+        .disabled-click {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-3 sm:p-6 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <main class="w-full max-w-2xl bg-slate-800/90 backdrop-blur-md border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-8 relative overflow-hidden">
+        
+        <!-- ========================================== -->
+        <!-- 1. START SCREEN (Halaman Awal)           -->
+        <!-- ========================================== -->
+        <section id="start-screen" class="space-y-6">
+            <div class="text-center space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Kuis Pendidikan Sejarah
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                    Masa Praaksara & Budaya Hindu di Indonesia
+                </h1>
+                <p class="text-slate-400 text-sm sm:text-base max-w-md mx-auto">
+                    Uji pemahamanmu tentang pembagian zaman prasejarah, manusia purba, dan kebudayaan Hindu kuno.
+                </p>
+            </div>
+
+            <!-- Form Pengaturan Kuis -->
+            <form id="start-form" onsubmit="handleStartQuiz(event)" class="space-y-5 bg-slate-850/60 p-5 rounded-2xl border border-slate-700/50">
+                <!-- Input Nama -->
+                <div>
+                    <label for="player-name" class="block text-sm font-semibold text-slate-300 mb-2">Nama Lengkap Pemain <span class="text-rose-400">*</span></label>
+                    <input 
+                        type="text" 
+                        id="player-name" 
+                        placeholder="Ketik nama Anda di sini..." 
+                        required
+                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-sm sm:text-base"
+                    >
+                    <p id="name-error" class="hidden text-rose-400 text-xs mt-1 font-medium">Silakan masukkan nama Anda sebelum memulai.</p>
+                </div>
+
+                <!-- Pilihan Durasi per Soal -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">Waktu Pengerjaan per Soal</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-600 bg-slate-900/80 cursor-pointer hover:border-indigo-400 transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-600/10 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500">
+                            <input type="radio" name="time-duration" value="15" class="sr-only">
+                            <span class="text-sm font-semibold text-slate-200">⚡ 15 Detik (Cepat)</span>
+                        </label>
+                        <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-600 bg-slate-900/80 cursor-pointer hover:border-indigo-400 transition has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-600/10 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500">
+                            <input type="radio" name="time-duration" value="30" checked class="sr-only">
+                            <span class="text-sm font-semibold text-slate-200">⏱️ 30 Detik (Santai)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Fitur Kuis Info -->
+                <div class="text-xs text-slate-400 space-y-1 bg-slate-900/50 p-3 rounded-xl border border-slate-700/40">
+                    <p>✓ Berisi total <strong>25 butir soal</strong> pilihan ganda.</p>
+                    <p>✓ Urutan soal dan opsi jawaban selalu <strong>diacak</strong>.</p>
+                    <p>✓ Pembahasan & review lengkap ditampilkan setelah selesai.</p>
+                </div>
+
+                <!-- Tombol Mulai -->
+                <button 
+                    type="submit" 
+                    class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 active:scale-[0.99] transition shadow-lg shadow-indigo-500/25 text-base flex items-center justify-center gap-2"
+                >
+                    Mulai Kuis Sekarang
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 2. QUIZ SCREEN (Halaman Pengerjaan Soal)   -->
+        <!-- ========================================== -->
+        <section id="quiz-screen" class="hidden space-y-5">
+            <!-- Header Status & Timer -->
+            <div class="space-y-3 pb-3 border-b border-slate-700">
+                <div class="flex items-center justify-between gap-3 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-indigo-400" id="current-player-display">Pemain</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 bg-slate-700/70 text-slate-300 font-semibold rounded-lg text-xs" id="question-counter">
+                            Soal 1 / 25
+                        </span>
+                        <!-- Countdown Badge -->
+                        <div id="timer-badge" class="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono font-bold text-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <svg class="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span id="timer-text">30s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Progress Bar Waktu -->
+                <div class="w-full bg-slate-700/50 h-2 rounded-full overflow-hidden">
+                    <div id="timer-bar" class="h-full bg-emerald-400 transition-all duration-300 ease-linear rounded-full" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Teks Pertanyaan -->
+            <div class="min-h-[70px] flex items-center">
+                <h2 id="question-text" class="text-base sm:text-lg font-bold text-slate-100 leading-relaxed">
+                    Memuat pertanyaan...
+                </h2>
+            </div>
+
+            <!-- Notifikasi Waktu Habis / Feedback -->
+            <div id="status-feedback" class="hidden py-2 px-3 text-center rounded-lg text-xs sm:text-sm font-semibold transition"></div>
+
+            <!-- Opsi Pilihan Jawaban -->
+            <div id="options-container" class="grid grid-cols-1 gap-2.5 sm:gap-3">
+                <!-- Tombol opsi jawaban digenerate oleh JS -->
+            </div>
+
+            <!-- Tombol Navigasi Manual jika user ingin langsung skip jeda -->
+            <div class="pt-2 flex justify-end">
+                <button 
+                    id="next-btn" 
+                    onclick="handleNextQuestion()" 
+                    class="hidden text-xs sm:text-sm px-4 py-2 font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow"
+                >
+                    Lanjut Soal Berikutnya →
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. RESULT & REVIEW SCREEN (Hasil Kuis)    -->
+        <!-- ========================================== -->
+        <section id="result-screen" class="hidden space-y-6">
+            <!-- Header Hasil -->
+            <div class="text-center space-y-2">
+                <p class="text-xs uppercase tracking-widest text-indigo-400 font-extrabold">Hasil Akhir Kuis</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-white">
+                    Kuis Sejarah: Masa Praaksara & Budaya Hindu
+                </h1>
+                <p class="text-sm text-slate-400">Pemain: <strong id="result-player-name" class="text-indigo-300 font-bold"></strong></p>
+            </div>
+
+            <!-- Skor Card & Stat -->
+            <div class="bg-slate-850/80 border border-slate-700 rounded-2xl p-5 text-center space-y-4">
+                <div class="inline-block p-4 rounded-full bg-indigo-500/10 border-2 border-indigo-500/30">
+                    <span id="final-score" class="text-4xl sm:text-5xl font-black text-white">0</span>
+                    <span class="text-sm font-bold text-indigo-400 block mt-1">NILAI / 100</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-700/60 text-center">
+                    <div class="p-2 bg-slate-900/60 rounded-xl">
+                        <span class="text-xs text-slate-400 block font-medium">Total Soal</span>
+                        <span id="stat-total" class="text-lg font-bold text-slate-200">25</span>
+                    </div>
+                    <div class="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                        <span class="text-xs text-emerald-400 block font-medium">Benar</span>
+                        <span id="stat-correct" class="text-lg font-bold text-emerald-400">0</span>
+                    </div>
+                    <div class="p-2 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                        <span class="text-xs text-rose-400 block font-medium">Salah / Waktu</span>
+                        <span id="stat-wrong" class="text-lg font-bold text-rose-400">0</span>
+                    </div>
+                </div>
+
+                <button 
+                    onclick="restartQuiz()" 
+                    class="w-full py-3 px-5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] transition shadow-lg text-sm sm:text-base flex items-center justify-center gap-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Main Lagi (Acak Ulang)
+                </button>
+            </div>
+
+            <!-- Review Lengkap Seluruh Soal -->
+            <div class="space-y-4 pt-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        📋 Pembahasan & Review Lengkap
+                    </h3>
+                    <span class="text-xs text-slate-400 font-medium">25 Soal</span>
+                </div>
+
+                <div id="review-list" class="space-y-3.5 max-h-[480px] overflow-y-auto pr-1">
+                    <!-- Item review diinjeksi oleh JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- LOGIKA JAVASCRIPT KUIS                    -->
+    <!-- ========================================== -->
+    <script>
+        // 1. Bank Data Lengkap 25 Soal dari Dokumen
+        const masterQuestions = [
+            {
+                id: 1,
+                question: "Berdasarkan kebudayaan zaman pra aksara Indonesia dibagi dua zaman yaitu...",
+                correct: "Zaman batu dan zaman Logam",
+                options: [
+                    "Arkaeozoikhum dan mesozoikhum",
+                    "Zaman berburu dan mengumpulkan makanan",
+                    "Zaman Pra Aksara dan Nirleka",
+                    "Zaman batu dan zaman Logam"
+                ]
+            },
+            {
+                id: 2,
+                question: "Berikut Adalah pembagian zaman batu di Indonesia kecuali zaman ...",
+                correct: "Palaeozoikhum",
+                options: [
+                    "Palaeolitikhum",
+                    "Neolitikhum",
+                    "Mesolitikhum",
+                    "Palaeozoikhum"
+                ]
+            },
+            {
+                id: 3,
+                question: "Manusia purba di Indonesia pendukung kebudayaan Pacitan ( Kapak Genggam ) Adalah...",
+                correct: "Pitecanthropus Erectus",
+                options: [
+                    "Pitecanthropus Erectus",
+                    "Homo Wajakensis",
+                    "Homo Soloensis",
+                    "Deutro Melayu"
+                ]
+            },
+            {
+                id: 4,
+                question: "Tehnik pengecoran logam degan tehnik Cetak Tuang pada zaman Perunggu disebut tehnik...",
+                correct: "A Cire Perdue",
+                options: [
+                    "Bivalve",
+                    "Nekara",
+                    "A Cire Perdue",
+                    "Moko"
+                ]
+            },
+            {
+                id: 5,
+                question: "Tugu Batu pemujaan hasil kebudayaan Megalitikhum disebut...",
+                correct: "Menhir",
+                options: [
+                    "Menhir",
+                    "Sarkofagus",
+                    "Dolmen",
+                    "Waruga"
+                ]
+            },
+            {
+                id: 6,
+                question: "Sistem pemerintahan pada masa Pra Aksara di Indonesia Adalah system...",
+                correct: "Kepala Suku.",
+                options: [
+                    "Kepala Dusun.",
+                    "Kepala Suku.",
+                    "Kepala Desa.",
+                    "Kesultanan."
+                ]
+            },
+            {
+                id: 7,
+                question: "Kepala suku besar dalam suku dani disebut ....",
+                correct: "Ap Horeg.",
+                options: [
+                    "Ap Menteg.",
+                    "Ap Horeg.",
+                    "Ap Kain.",
+                    "A Ubalik."
+                ]
+            },
+            {
+                id: 8,
+                question: "Sistem pemerintahan kepala suku pada masa Pra Aksara di Indonesia dimulai sejak zaman....",
+                correct: "Bercocok tanam.",
+                options: [
+                    "Perundagian.",
+                    "Bercocok tanam.",
+                    "Logam.",
+                    "Besi."
+                ]
+            },
+            {
+                id: 9,
+                question: "Sistem kepala suku sampai sekarang masih berlangsung di Papua Maluku yang dijalankan oleh suku...",
+                correct: "Dani.",
+                options: [
+                    "Dani.",
+                    "Dayak.",
+                    "Menteg.",
+                    "Toraja."
+                ]
+            },
+            {
+                id: 10,
+                question: "Kepala perang dalam suku dani di Papua Maluku disebut...",
+                correct: "Ap Menteg.",
+                options: [
+                    "Ap Menteg.",
+                    "Ap Horeg.",
+                    "Ap Kain.",
+                    "A Ubalik."
+                ]
+            },
+            {
+                id: 11,
+                question: "Agama Hindu lahir dan berkembang di .....",
+                correct: "India",
+                options: [
+                    "Pakistan.",
+                    "Jepang.",
+                    "Persia.",
+                    "India"
+                ]
+            },
+            {
+                id: 12,
+                question: "Kepercayaan terhadap banyak dewa disebut kepercayaan ...",
+                correct: "Politeisme.",
+                options: [
+                    "Animisme.",
+                    "Politeisme.",
+                    "Dinamisme.",
+                    "Monoteisme."
+                ]
+            },
+            {
+                id: 13,
+                question: "Dewa tertinggi dari tiga dewa utama dalam agama hindu disebut..",
+                correct: "Trimurti.",
+                options: [
+                    "Trimurti.",
+                    "Tridarma.",
+                    "Trisakti.",
+                    "Trisula."
+                ]
+            },
+            {
+                id: 14,
+                question: "Peradaban Mahenyo Daro dan Harappa di India dikembangkan oleh suku...",
+                correct: "Dravida.",
+                options: [
+                    "Munda.",
+                    "Shik.",
+                    "Dravida.",
+                    "Arya."
+                ]
+            },
+            {
+                id: 15,
+                question: "Untuk mencegah terjadinya percampuran budaya, bangsa arya membentuk system kasta dan kepercayaan...",
+                correct: "Politeisme.",
+                options: [
+                    "Politeisme.",
+                    "Animisme.",
+                    "Ateisme.",
+                    "Dinamisme"
+                ]
+            },
+            {
+                id: 16,
+                question: "Budaya Hindu lahir dari percampuran tiga budaya yaitu budaya Arya, Munda dan .....",
+                correct: "Dravida",
+                options: [
+                    "Dravida",
+                    "Harappa",
+                    "Mahenyodaro",
+                    "Shik"
+                ]
+            },
+            {
+                id: 17,
+                question: "Golongan petani dalam masyarakat. hindu di india masuk dalam kasta...",
+                correct: "Sudra",
+                options: [
+                    "Ksatrya",
+                    "Sudra",
+                    "Brahmana",
+                    "Waisya"
+                ]
+            },
+            {
+                id: 18,
+                question: "Tujuan bangsa arya membentuk kepercayaan Politeisme dan Kasta Adalah untuk menjaga kemurnian...",
+                correct: "Darah bangsa arya.",
+                options: [
+                    "Agama arya",
+                    "tempat tempat suci di india",
+                    "Darah bangsa arya.",
+                    "Kepercayaan Arya."
+                ]
+            },
+            {
+                id: 19,
+                question: "Golongan Bangsawan dan Prajurit di India masuk dalam kasta ....",
+                correct: "Ksatrya",
+                options: [
+                    "Ksatrya",
+                    "Sudra",
+                    "Waiya",
+                    "Brahmana"
+                ]
+            },
+            {
+                id: 20,
+                question: "Kasta waisya dalam Masyarakat hindu di India terdiri dari golongan ...",
+                correct: "Pedagang",
+                options: [
+                    "Bangsawan",
+                    "Pendeta",
+                    "Prajurit",
+                    "Pedagang"
+                ]
+            },
+            {
+                id: 21,
+                question: "Untuk mencegah percampuran budaya (menjaga Kemurnian darah Arya) Bangsa Arya membentuk..",
+                correct: "Kasta.",
+                options: [
+                    "Kasta.",
+                    "Budaya.",
+                    "Pemerintah.",
+                    "Kesultanan"
+                ]
+            },
+            {
+                id: 22,
+                question: "Dewa Wisnu dalam agama Hindu adalah dewa....",
+                correct: "Pelindung.",
+                options: [
+                    "Pencipta.",
+                    "Perusak.",
+                    "Pelindung.",
+                    "Kesuburan."
+                ]
+            },
+            {
+                id: 23,
+                question: "Pembagian masyarakat berdasarkan golongan dalam agama hindu disebut..",
+                correct: "Kasta.",
+                options: [
+                    "Kasta.",
+                    "Trimurti",
+                    "Upanishad.",
+                    "Strata."
+                ]
+            },
+            {
+                id: 24,
+                question: "Tiga Dewa Utama dalam agama Hindu disebut ...",
+                correct: "Trimurti.",
+                options: [
+                    "Trimurti.",
+                    "Kasta",
+                    "Trisakti.",
+                    "Politeisme"
+                ]
+            },
+            {
+                id: 25,
+                question: "Budaya Hindu lahir dari percampuran tiga budaya kecuali...",
+                correct: "Shik.",
+                options: [
+                    "Dravida.",
+                    "Munda",
+                    "Shik.",
+                    "Arya"
+                ]
+            }
+        ];
+
+        // 2. State Aplikasi
+        let playerName = "";
+        let durationPerQuestion = 30; // default detik
+        let quizQuestions = [];
+        let currentIndex = 0;
+        let userResponses = []; // Menyimpan riwayat jawaban pemain
+        let timerInterval = null;
+        let timeLeft = 0;
+        let autoNextTimeout = null;
+
+        // Utility: Fisher-Yates Shuffle untuk acak murni
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 3. Memulai Kuis
+        function handleStartQuiz(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById("player-name");
+            const nameError = document.getElementById("name-error");
+
+            playerName = nameInput.value.trim();
+            if (!playerName) {
+                nameError.classList.remove("hidden");
+                return;
+            }
+            nameError.classList.add("hidden");
+
+            // Mengambil opsi durasi yang dipilih
+            const selectedDuration = document.querySelector('input[name="time-duration"]:checked');
+            durationPerQuestion = selectedDuration ? parseInt(selectedDuration.value, 10) : 30;
+
+            // Inisialisasi kuis & acak soal dan opsi
+            quizQuestions = shuffleArray(masterQuestions).map(item => {
+                return {
+                    id: item.id,
+                    question: item.question,
+                    correct: item.correct,
+                    options: shuffleArray(item.options) // Opsi juga selalu teracak
+                };
+            });
+
+            currentIndex = 0;
+            userResponses = [];
+
+            // Update UI perpindahan layar
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            document.getElementById("current-player-display").textContent = "👤 " + playerName;
+
+            // Tampilkan pertanyaan pertama
+            renderCurrentQuestion();
+        }
+
+        // 4. Render Soal Aktif
+        function renderCurrentQuestion() {
+            // Bersihkan timer dan timeout sebelumnya
+            clearInterval(timerInterval);
+            clearTimeout(autoNextTimeout);
+
+            const qData = quizQuestions[currentIndex];
+            const total = quizQuestions.length;
+
+            // Update counter soal
+            document.getElementById("question-counter").textContent = `Soal ${currentIndex + 1} / ${total}`;
+            document.getElementById("question-text").textContent = qData.question;
+
+            // Sembunyikan notifikasi & tombol lanjut manual
+            const statusBox = document.getElementById("status-feedback");
+            statusBox.className = "hidden py-2 px-3 text-center rounded-lg text-xs sm:text-sm font-semibold transition";
+            document.getElementById("next-btn").classList.add("hidden");
+
+            // Render tombol-tombol opsi jawaban
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+
+            const optionLabels = ["A", "B", "C", "D"];
+
+            qData.options.forEach((optText, index) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "option-btn w-full text-left p-3.5 sm:p-4 rounded-xl border border-slate-700 bg-slate-900/90 hover:bg-slate-700/80 hover:border-slate-500 text-slate-100 flex items-start gap-3 text-sm sm:text-base font-medium";
+                btn.innerHTML = `
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-slate-800 text-xs font-bold text-slate-300 border border-slate-600 flex-shrink-0">${optionLabels[index]}</span>
+                    <span class="flex-1">${optText}</span>
+                `;
+                btn.onclick = () => selectAnswer(optText, btn);
+                container.appendChild(btn);
+            });
+
+            // Mulai Timer untuk soal ini
+            startQuestionTimer();
+        }
+
+        // 5. Logika Timer Hitung Mundur
+        function startQuestionTimer() {
+            timeLeft = durationPerQuestion;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timerText = document.getElementById("timer-text");
+            const timerBar = document.getElementById("timer-bar");
+            const timerBadge = document.getElementById("timer-badge");
+
+            timerText.textContent = `${timeLeft}s`;
+
+            const percentage = Math.max(0, (timeLeft / durationPerQuestion) * 100);
+            timerBar.style.width = `${percentage}%`;
+
+            // Visual feedback warna timer saat menipis
+            if (timeLeft <= 5) {
+                timerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full font-mono font-bold text-sm bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse";
+                timerBar.className = "h-full bg-rose-500 transition-all duration-300 ease-linear rounded-full";
+            } else if (timeLeft <= 10) {
+                timerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full font-mono font-bold text-sm bg-amber-500/20 text-amber-300 border border-amber-500/40";
+                timerBar.className = "h-full bg-amber-400 transition-all duration-300 ease-linear rounded-full";
+            } else {
+                timerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full font-mono font-bold text-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                timerBar.className = "h-full bg-emerald-400 transition-all duration-300 ease-linear rounded-full";
+            }
+        }
+
+        // 6. Saat Pemain Memilih Jawaban
+        function selectAnswer(selectedAnswer, clickedBtn) {
+            clearInterval(timerInterval);
+
+            const qData = quizQuestions[currentIndex];
+            const isCorrect = (selectedAnswer.trim().toLowerCase() === qData.correct.trim().toLowerCase());
+            const optionsContainer = document.getElementById("options-container");
+            const buttons = optionsContainer.querySelectorAll(".option-btn");
+
+            // Kunci semua tombol agar tidak bisa diklik ulang
+            buttons.forEach(btn => btn.classList.add("disabled-click"));
+
+            // Catat respons user
+            userResponses.push({
+                question: qData.question,
+                userChoice: selectedAnswer,
+                correctChoice: qData.correct,
+                isCorrect: isCorrect,
+                isTimeout: false
+            });
+
+            // Feedback visual pada tombol
+            if (isCorrect) {
+                clickedBtn.classList.add("btn-correct");
+            } else {
+                clickedBtn.classList.add("btn-wrong");
+                // Sorot jawaban yang benar dengan warna hijau
+                highlightCorrectOption(buttons, qData.correct);
+            }
+
+            // Tampilkan tombol lanjut dan jadwalkan otomatis berikutnya
+            scheduleAutoNext();
+        }
+
+        // 7. Saat Waktu Habis
+        function handleTimeOut() {
+            const qData = quizQuestions[currentIndex];
+            const optionsContainer = document.getElementById("options-container");
+            const buttons = optionsContainer.querySelectorAll(".option-btn");
+
+            // Kunci tombol
+            buttons.forEach(btn => btn.classList.add("disabled-click"));
+
+            // Catat bahwa waktu habis
+            userResponses.push({
+                question: qData.question,
+                userChoice: "Waktu Habis",
+                correctChoice: qData.correct,
+                isCorrect: false,
+                isTimeout: true
+            });
+
+            // Tampilkan pesan Waktu Habis
+            const statusBox = document.getElementById("status-feedback");
+            statusBox.className = "py-2 px-3 text-center rounded-lg text-xs sm:text-sm font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 block";
+            statusBox.textContent = "⏱️ Waktu habis! Jawaban yang benar telah disorot.";
+
+            // Sorot jawaban yang benar
+            highlightCorrectOption(buttons, qData.correct);
+
+            // Lanjut ke soal berikutnya
+            scheduleAutoNext();
+        }
+
+        // Helper: Menemukan dan menyorot jawaban yang benar
+        function highlightCorrectOption(buttons, correctAnswer) {
+            buttons.forEach(btn => {
+                const textSpan = btn.querySelector("span:last-child");
+                if (textSpan && textSpan.textContent.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+                    btn.classList.add("btn-correct");
+                }
+            });
+        }
+
+        // Otomatis pindah soal setelah 1.7 detik atau jika pemain klik tombol 'Lanjut'
+        function scheduleAutoNext() {
+            document.getElementById("next-btn").classList.remove("hidden");
+            autoNextTimeout = setTimeout(() => {
+                handleNextQuestion();
+            }, 1800);
+        }
+
+        function handleNextQuestion() {
+            clearTimeout(autoNextTimeout);
+            currentIndex++;
+
+            if (currentIndex < quizQuestions.length) {
+                renderCurrentQuestion();
+            } else {
+                showQuizResult();
+            }
+        }
+
+        // 8. Tampilan Hasil Akhir & Review Lengkap
+        function showQuizResult() {
+            clearInterval(timerInterval);
+            clearTimeout(autoNextTimeout);
+
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.remove("hidden");
+
+            const total = userResponses.length;
+            const correctCount = userResponses.filter(r => r.isCorrect).length;
+            const wrongCount = total - correctCount;
+
+            // Perhitungan Nilai: (Benar / Total) * 100
+            const rawScore = (correctCount / total) * 100;
+            const finalScore = Number.isInteger(rawScore) ? rawScore : rawScore.toFixed(1);
+
+            document.getElementById("result-player-name").textContent = playerName;
+            document.getElementById("final-score").textContent = finalScore;
+            document.getElementById("stat-total").textContent = total;
+            document.getElementById("stat-correct").textContent = correctCount;
+            document.getElementById("stat-wrong").textContent = wrongCount;
+
+            // Render Daftar Review Lengkap Semua Soal
+            const reviewList = document.getElementById("review-list");
+            reviewList.innerHTML = "";
+
+            userResponses.forEach((res, idx) => {
+                const card = document.createElement("div");
+                card.className = `p-4 rounded-xl border text-sm space-y-2 ${
+                    res.isCorrect 
+                        ? 'bg-emerald-950/20 border-emerald-500/30' 
+                        : 'bg-rose-950/20 border-rose-500/30'
+                }`;
+
+                let statusBadge = "";
+                if (res.isCorrect) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ Benar</span>`;
+                } else if (res.isTimeout) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">⏱️ Waktu Habis</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">✗ Salah</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <span class="font-bold text-slate-300">Soal ${idx + 1}</span>
+                        ${statusBadge}
+                    </div>
+                    <p class="font-semibold text-slate-100 text-sm leading-snug">${res.question}</p>
+                    <div class="pt-1.5 space-y-1 text-xs sm:text-sm">
+                        <p class="text-slate-400">
+                            Jawaban Anda: 
+                            <strong class="${res.isCorrect ? 'text-emerald-400' : 'text-rose-400 font-semibold'}">
+                                ${res.userChoice}
+                            </strong>
+                        </p>
+                        ${!res.isCorrect ? `
+                            <p class="text-slate-300">
+                                Kunci Jawaban: 
+                                <strong class="text-emerald-400 font-bold bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-600/30 inline-block mt-0.5">
+                                    ${res.correctChoice}
+                                </strong>
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
+                reviewList.appendChild(card);
+            });
+        }
+
+        // 9. Reset Kuis & Mulai Baru
+        function restartQuiz() {
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("start-screen").classList.remove("hidden");
+            document.getElementById("player-name").value = playerName; // Mempertahankan nama pemain sebelumnya
+        }
+    </script>
+</body>
+</html>
